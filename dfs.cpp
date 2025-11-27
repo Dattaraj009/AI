@@ -2,51 +2,42 @@
 using namespace std;
 
 string goal = "12345678_";
+set<string> visited;
 
 vector<string> getNeighbours(string s) {
-    vector<string> ans;
-    int idx = s.find('_');
+    vector<string> res;
+    int idx = s.find('_');  // blank index
     int r = idx / 3, c = idx % 3;
 
-    int delrow[] = {-1, 0, 1, 0};
-    int delcol[] = {0, 1, 0, -1};
+    int dr[] = {1, -1, 0, 0};
+    int dc[] = {0, 0, 1, -1};
 
-    for (int i = 0; i < 4; i++) {
-        int nr = r + delrow[i], nc = c + delcol[i];
+    for (int k = 0; k < 4; k++) {
+        int nr = r + dr[k];
+        int nc = c + dc[k];
         if (nr >= 0 && nr < 3 && nc >= 0 && nc < 3) {
             string t = s;
             swap(t[idx], t[nr * 3 + nc]);
-            ans.push_back(t);
+            res.push_back(t);
         }
     }
-    return ans;
+    return res;
+}
+
+bool DFS(string state) {
+    if (state == goal) return true;
+    visited.insert(state);
+
+    for (auto next : getNeighbours(state)) {
+        if (!visited.count(next)) {
+            if (DFS(next)) return true;
+        }
+    }
+    return false;
 }
 
 int main() {
-    string start = "1234567_8";
-
-    queue<string> q;
-    set<string> vis;
-
-    q.push(start);
-    vis.insert(start);
-
-    while (!q.empty()) {
-        string cur = q.front(); 
-        q.pop();
-
-        if (cur == goal) {
-            cout << "Goal Found\n";
-            return 0;
-        }
-
-        for (string nxt : getNeighbours(cur)) {
-            if (!vis.count(nxt)) {
-                vis.insert(nxt);
-                q.push(nxt);
-            }
-        }
-    }
-
-    cout << "Goal NOT reachable\n";
+    string start = "1234567_8"; // example initial state
+    if (DFS(start)) cout << "Goal Found using DFS\n";
+    else cout << "Goal NOT reachable\n";
 }
