@@ -1,84 +1,46 @@
-#include <iostream>
-#include <vector>
-
+#include<bits/stdc++.h>
 using namespace std;
-
-const int N = 8; // Size of the chessboard
-
-// Function to print the board
-void printBoard(const vector<vector<int>>& board) {
-    for (int i = 0; i < N; i++) {
-        for (int j = 0; j < N; j++) {
-            cout << board[i][j] << " ";
+vector<vector<string>> soln;
+void solve(int col,int n,vector<int>& lastrow,vector<string>& board,vector<int>& lowerdiag,vector<int> upperdiag){
+    if(col == n){
+        soln.push_back(board);
+        return;
+    }
+    
+    for(int row=0;row<n;row++){
+        
+        if(lastrow[row]==0 && lowerdiag[row+col] == 0 && upperdiag[n-1 + col - row] == 0){
+            lastrow[row] = 1;
+            lowerdiag[row+col] = 1;
+            upperdiag[n-1 + col- row] = 1;
+            board[row][col] = 'Q';
+            
+            solve(col+1,n,lastrow,board,lowerdiag,upperdiag);
+            lastrow[row] = 0;
+            lowerdiag[row+col] = 0;
+            upperdiag[n-1 + col- row] = 0;
+            board[row][col] = '.';
         }
-        cout << endl;
     }
 }
 
-// Function to check if a queen can be placed safely at board[row][col]
-bool isSafe(const vector<vector<int>>& board, int row, int col) {
-    // Check this row on the left side
-    for (int i = 0; i < col; i++) {
-        if (board[row][i]) {
-            return false;
+int main(){
+    int n = 4;
+    
+    vector<int> lastrow(n,0);
+    vector<string> board(n,string(n,'.'));
+    vector<int> lowerdiag(2*n-1,0);
+    vector<int> upperdiag(2*n-1,0);
+    
+    solve(0,n,lastrow,board,lowerdiag,upperdiag);
+    
+    for(int i=0;i<soln.size();i++){
+        
+        for(int j=0;j<soln[0].size();j++){
+            cout<<soln[i][j];
+            cout<<endl;
         }
+        cout<<endl;
     }
-
-    // Check upper diagonal on the left
-    for (int i = row, j = col; i >= 0 && j >= 0; i--, j--) {
-        if (board[i][j]) {
-            return false;
-        }
-    }
-
-    // Check lower diagonal on the left
-    for (int i = row, j = col; j >= 0 && i < N; i++, j--) {
-        if (board[i][j]) {
-            return false;
-        }
-    }
-
-    return true;
-}
-
-// Recursive function to solve the 8-Queens problem
-bool solveNQueens(vector<vector<int>>& board, int col) {
-    // Base case: If all queens are placed, return true
-    if (col >= N) {
-        return true;
-    }
-
-    // Consider this column and try placing this queen in all rows one by one
-    for (int i = 0; i < N; i++) {
-        // Check if the queen can be placed at board[i][col]
-        if (isSafe(board, i, col)) {
-            // Place the queen
-            board[i][col] = 1;
-
-            // Recur to place the rest of the queens
-            if (solveNQueens(board, col + 1)) {
-                return true;
-            }
-
-            // If placing the queen doesn't lead to a solution, then backtrack
-            board[i][col] = 0; // Backtrack
-        }
-    }
-
-    // If the queen cannot be placed in any row in this column, return false
-    return false;
-}
-
-int main() {
-    // Initialize the 8x8 board with all zeros
-    vector<vector<int>> board(N, vector<int>(N, 0));
-
-    if (solveNQueens(board, 0)) {
-        cout << "Solution found:" << endl;
-        printBoard(board);
-    } else {
-        cout << "Solution does not exist." << endl;
-    }
-
-    return 0;
+    
 }

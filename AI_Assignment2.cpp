@@ -1,80 +1,60 @@
-#include <iostream>
-#include <vector>
-#include <map>
-#include <string>
-
+#include<bits/stdc++.h>
 using namespace std;
-
-// Variables: regions of the map
-vector<string> variables = {"WA", "NT", "SA", "Q", "NSW", "V", "T"};
-
-// Domains: colors available
-vector<string> colors = {"Red", "Green", "Blue"};
-map<string, vector<string>> domains;
-
-// Neighbors: adjacency constraints
-map<string, vector<string>> neighbors = {
-    {"WA", {"NT", "SA"}},
-    {"NT", {"WA", "SA", "Q"}},
-    {"SA", {"WA", "NT", "Q", "NSW", "V"}},
-    {"Q", {"NT", "SA", "NSW"}},
-    {"NSW", {"Q", "SA", "V"}},
-    {"V", {"SA", "NSW"}},
-    {"T", {}}
-};
-
-// Function to check if the assignment is consistent
-bool isConsistent(string var, string value, map<string, string> &assignment) {
-    for (auto neighbor : neighbors[var]) {
-        if (assignment.find(neighbor) != assignment.end() && assignment[neighbor] == value) {
+bool isSafe(int node,int n,bool graph[101][101],int color[],int c){
+    for(int k=0;k<n;k++){
+        if(graph[k][node] == 1 && color[k] == c){
             return false;
         }
     }
+    
     return true;
 }
 
-// Backtracking search
-bool backtrack(map<string, string> &assignment) {
-    // If assignment is complete
-    if (assignment.size() == variables.size())
-        return true;
-
-    // Select unassigned variable
-    string var;
-    for (auto v : variables) {
-        if (assignment.find(v) == assignment.end()) {
-            var = v;
-            break;
+bool dfs(int node,int n,int m,bool graph[101][101],int color[]){
+    if (node == n) return true;
+    
+    for(int i=1;i<=m;i++){
+        if(isSafe(node,n,graph,color,i)){
+            color[node] = i;
+           if(dfs(node+1,n,m,graph,color)) return true;
+           color[node] = 0; // backtrack
         }
+        
     }
-
-    for (auto value : domains[var]) {
-        if (isConsistent(var, value, assignment)) {
-            assignment[var] = value;
-            if (backtrack(assignment))
-                return true;
-            // Remove assignment and backtrack
-            assignment.erase(var);
-        }
-    }
-
+    
     return false;
 }
 
-int main() {
-    // Initialize domains
-    for (auto var : variables)
-        domains[var] = colors;
+bool solve(bool graph[101][101],int n,int m,int color[]){
+    if(dfs(0,n,m,graph,color)) return true;
+    
+    return false;
+}
 
-    map<string, string> assignment;
-
-    if (backtrack(assignment)) {
-        cout << "Solution found:\n";
-        for (auto kv : assignment)
-            cout << kv.first << " : " << kv.second << endl;
+int main(){
+    int n=4;
+    int m=3;
+    
+    bool graph[101][101] = {0};
+    
+    graph[0][1] = graph[1][0] =1;
+    graph[1][2] = graph[2][1] = 1;
+    graph[2][3] = graph[3][2] = 1;
+    graph[3][0] = graph[0][3] = 1;
+    graph[0][2] = graph[2][0] = 1;
+    
+    int color[n] = {0};
+    
+    if (solve(graph, n, m, color)) {
+        cout << "true\n";
+        cout << "Coloring: ";
+        for (int i = 0; i < n; i++) {
+            cout << "Node " << i << " -> Color " << color[i] << "\n";
+        }
     } else {
-        cout << "No solution found." << endl;
+        cout << "false\n";
     }
 
+    
     return 0;
 }
